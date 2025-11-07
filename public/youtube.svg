@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="YouTube logo">
+  <!-- Red rounded rectangle background -->
+  <rect x="32" y="128" rx="64" ry="64" width="448" height="256" fill="#FF0000"/>
+  <!-- White play triangle centered -->
+  <polygon points="215,186 215,326 345,256" fill="#FFFFFF"/>
+</svg>
