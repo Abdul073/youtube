@@ -9,6 +9,10 @@ interface VideoPlayerProsp {
   onPlay?: () => void;
 }
 
+export const VideoPlayerSkeleton = () => {
+  return <div className="aspect-video bg-black rounded-xl" />;
+};
+
 export const VideoPlayer = ({
   autoPlay,
   onPlay,
