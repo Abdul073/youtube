@@ -1,11 +1,11 @@
 import { db } from "@/db";
-import { comments } from "@/db/schema";
+import { comments, users } from "@/db/schema";
 import {
   baseProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "@/trpc/init";
-import { eq } from "drizzle-orm";
+import { and, desc, eq, getTableColumns, lt, or } from "drizzle-orm";
 
 import z from "zod";
 
@@ -33,16 +33,58 @@ export const CommentsRouter = createTRPCRouter({
     .input(
       z.object({
         videoId: z.string().uuid(),
+        cursor: z
+          .object({
+            id: z.string().uuid(),
+            updatedAt: z.date(),
+          })
+          .nullish(),
+        limit: z.number().min(1).max(100),
       })
     )
     .query(async ({ input }) => {
-      const { videoId } = input;
+      const { videoId, cursor, limit } = input;
 
       const data = await db
-        .select()
+        .select({
+          ...getTableColumns(comments),
+          user: users,
+        })
         .from(comments)
-        .where(eq(comments.videoId, videoId));
+        .where(
+          and(
+            eq(comments.videoId, videoId),
+            cursor
+              ? or(
+                  lt(comments.updatedAt, cursor.updatedAt),
+                  and(
+                    eq(comments.updatedAt, cursor.updatedAt),
+                    lt(comments.id, cursor.id)
+                  )
+                )
+              : undefined
+          )
+        )
+        .innerJoin(users, eq(comments.userId, users.id))
+        .orderBy(desc(comments.updatedAt), desc(comments.id))
+        .limit(limit + 1);
 
-      return data;
+      const hasMore = data.length > limit;
+      // Remove the last item if there is more data
+      const items = hasMore ? data.slice(0, -1) : data;
+      // set the next cursor to the last item
+
+      const lastitem = items[items.length - 1];
+      const nextCursor = hasMore
+        ? {
+            id: lastitem.id,
+            updatedAt: lastitem.updatedAt,
+          }
+        : null;
+
+      return {
+        items,
+        nextCursor,
+      };
     }),
 });

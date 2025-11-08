@@ -1,5 +1,9 @@
 "use client";
 
+import { InfiniteScroll } from "@/components/infinite-scroll";
+import { DEFAULT_LIMIT } from "@/constants";
+import { CommentItem } from "@/modules/comments/ui/components/comment-item";
+import { CommentForm } from "@/modules/comments/ui/components/comments-form";
 import { trpc } from "@/trpc/client";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
@@ -18,6 +22,34 @@ export const CommentsSection = ({ videoId }: CommentsSectionProps) => {
   );
 };
 export const CommentsSectionSuspence = ({ videoId }: CommentsSectionProps) => {
-  const [comments] = trpc.comments.getMany.useSuspenseQuery({ videoId });
-  return <div>{JSON.stringify(comments)}</div>;
+  const [comments, query] = trpc.comments.getMany.useSuspenseInfiniteQuery(
+    {
+      videoId,
+      limit: DEFAULT_LIMIT,
+    },
+    {
+      getNextPageParam: (lastpage) => lastpage.nextCursor,
+    }
+  );
+  return (
+    <div className="mt-6">
+      <div className="flex flex-col gap-6">
+        <h1>0 comments</h1>
+        <CommentForm videoId={videoId} />
+        <div className="flex flex-col gap-4 mt-2">
+          {comments.pages
+            .flatMap((page) => page.items)
+            .map((comment) => (
+              <CommentItem key={comment.id} comment={comment} />
+            ))}
+          <InfiniteScroll
+            isManual
+            hasNextPage={query.hasNextPage}
+            isFetchingNextPage={query.isFetchingNextPage}
+            fetchNextPage={query.fetchNextPage}
+          />
+        </div>
+      </div>
+    </div>
+  );
 };
