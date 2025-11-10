@@ -1,15 +1,48 @@
 import { db } from "@/db";
-import { comments, users } from "@/db/schema";
+import { commentReactions, comments, users } from "@/db/schema";
 import {
   baseProcedure,
   createTRPCRouter,
   protectedProcedure,
 } from "@/trpc/init";
-import { and, desc, eq, getTableColumns, lt, or } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
+import {
+  and,
+  count,
+  desc,
+  eq,
+  getTableColumns,
+  inArray,
+  lt,
+  or,
+} from "drizzle-orm";
 
 import z from "zod";
 
 export const CommentsRouter = createTRPCRouter({
+  remove: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { id } = input;
+      const { id: userId } = ctx.user;
+
+      const [deletedComment] = await db
+
+        .delete(comments)
+        .where(and(eq(comments.id, id), eq(comments.userId, userId)))
+        .returning();
+
+      if (!deletedComment) {
+        throw new TRPCError({ code: "NOT_FOUND" });
+      }
+
+      return deletedComment;
+    }),
+
   create: protectedProcedure
     .input(
       z.object({
@@ -42,32 +75,79 @@ export const CommentsRouter = createTRPCRouter({
         limit: z.number().min(1).max(100),
       })
     )
-    .query(async ({ input }) => {
+    .query(async ({ input, ctx }) => {
+      const { clerkUserId } = ctx;
       const { videoId, cursor, limit } = input;
 
-      const data = await db
-        .select({
-          ...getTableColumns(comments),
-          user: users,
-        })
-        .from(comments)
-        .where(
-          and(
-            eq(comments.videoId, videoId),
-            cursor
-              ? or(
-                  lt(comments.updatedAt, cursor.updatedAt),
-                  and(
-                    eq(comments.updatedAt, cursor.updatedAt),
-                    lt(comments.id, cursor.id)
+      let userId;
+
+      const [user] = await db
+        .select()
+        .from(users)
+        .where(inArray(users.clerkId, clerkUserId ? [clerkUserId] : []));
+
+      if (user) {
+        userId = user.id;
+      }
+
+      const viewerReaction = db.$with("viewer_reaction").as(
+        db
+          .select({
+            commentId: commentReactions.commentId,
+            type: commentReactions.type,
+          })
+          .from(commentReactions)
+          .where(inArray(commentReactions.userId, userId ? [userId] : []))
+      );
+
+      const [totalData, data] = await Promise.all([
+        db
+          .select({
+            count: count(),
+          })
+          .from(comments)
+          .where(eq(comments.videoId, videoId)),
+        db
+          .with(viewerReaction)
+          .select({
+            ...getTableColumns(comments),
+            user: users,
+            viewerReaction: viewerReaction.type,
+            likeCount: db.$count(
+              commentReactions,
+              and(
+                eq(commentReactions.type, "like"),
+                eq(commentReactions.commentId, comments.id)
+              )
+            ),
+            dislikeCount: db.$count(
+              commentReactions,
+              and(
+                eq(commentReactions.type, "dislike"),
+                eq(commentReactions.commentId, comments.id)
+              )
+            ),
+          })
+          .from(comments)
+          .where(
+            and(
+              eq(comments.videoId, videoId),
+              cursor
+                ? or(
+                    lt(comments.updatedAt, cursor.updatedAt),
+                    and(
+                      eq(comments.updatedAt, cursor.updatedAt),
+                      lt(comments.id, cursor.id)
+                    )
                   )
-                )
-              : undefined
+                : undefined
+            )
           )
-        )
-        .innerJoin(users, eq(comments.userId, users.id))
-        .orderBy(desc(comments.updatedAt), desc(comments.id))
-        .limit(limit + 1);
+          .innerJoin(users, eq(comments.userId, users.id))
+          .leftJoin(viewerReaction, eq(comments.id, viewerReaction.commentId))
+          .orderBy(desc(comments.updatedAt), desc(comments.id))
+          .limit(limit + 1),
+      ]);
 
       const hasMore = data.length > limit;
       // Remove the last item if there is more data
@@ -83,6 +163,7 @@ export const CommentsRouter = createTRPCRouter({
         : null;
 
       return {
+        totalCount: totalData[0].count,
         items,
         nextCursor,
       };

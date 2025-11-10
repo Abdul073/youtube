@@ -5,6 +5,7 @@ import { DEFAULT_LIMIT } from "@/constants";
 import { CommentItem } from "@/modules/comments/ui/components/comment-item";
 import { CommentForm } from "@/modules/comments/ui/components/comments-form";
 import { trpc } from "@/trpc/client";
+import { Loader2Icon } from "lucide-react";
 import { Suspense } from "react";
 import { ErrorBoundary } from "react-error-boundary";
 
@@ -14,13 +15,22 @@ interface CommentsSectionProps {
 
 export const CommentsSection = ({ videoId }: CommentsSectionProps) => {
   return (
-    <Suspense fallback={<p>Loading...</p>}>
+    <Suspense fallback={<CommentsSectionSkeleton />}>
       <ErrorBoundary fallback={<p>Error</p>}>
         <CommentsSectionSuspence videoId={videoId} />
       </ErrorBoundary>
     </Suspense>
   );
 };
+
+const CommentsSectionSkeleton = () => {
+  return (
+    <div className="mt-6 flex justify-center items-center">
+      <Loader2Icon className="text-muted-foreground size-7 animate-spin" />
+    </div>
+  );
+};
+
 export const CommentsSectionSuspence = ({ videoId }: CommentsSectionProps) => {
   const [comments, query] = trpc.comments.getMany.useSuspenseInfiniteQuery(
     {
@@ -34,7 +44,9 @@ export const CommentsSectionSuspence = ({ videoId }: CommentsSectionProps) => {
   return (
     <div className="mt-6">
       <div className="flex flex-col gap-6">
-        <h1>0 comments</h1>
+        <h1 className="text-xl font-bold">
+          {comments.pages[0].totalCount} Comments
+        </h1>
         <CommentForm videoId={videoId} />
         <div className="flex flex-col gap-4 mt-2">
           {comments.pages
@@ -43,7 +55,6 @@ export const CommentsSectionSuspence = ({ videoId }: CommentsSectionProps) => {
               <CommentItem key={comment.id} comment={comment} />
             ))}
           <InfiniteScroll
-            isManual
             hasNextPage={query.hasNextPage}
             isFetchingNextPage={query.isFetchingNextPage}
             fetchNextPage={query.fetchNextPage}
