@@ -38,6 +38,7 @@ export const CommentForm = ({
   const create = trpc.comments.create.useMutation({
     onSuccess: () => {
       utils.comments.getMany.invalidate({ videoId });
+      utils.comments.getMany.invalidate({ videoId, parentId });
       form.reset();
       toast.success("Comment added");
       onSuccess?.();
@@ -53,6 +54,7 @@ export const CommentForm = ({
   const form = useForm<z.infer<typeof commentInsertSchema>>({
     resolver: zodResolver(commentInsertSchema.omit({ userId: true })),
     defaultValues: {
+      parentId: parentId,
       videoId: videoId,
       value: "",
     },

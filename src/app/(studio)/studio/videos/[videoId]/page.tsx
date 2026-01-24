@@ -1,11 +1,13 @@
 import { VideoView } from "@/modules/studio/ui/views/video-view";
 import { HydrateClient, trpc } from "@/trpc/server";
 
+
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ videoId: string }>;
 }
 
-export const dynamic = "force-dynamic";
 const page = async ({ params }: PageProps) => {
   const { videoId } = await params;
 
