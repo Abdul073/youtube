@@ -1,6 +1,5 @@
 import React from "react";
-import { HistoryVideosSection } from "../../section/history-videos-section";
-import { LikedVideosSection } from "../../section/liked-videos-section";
+import { LikedVideosSection } from "@/modules/playlists/ui/section/liked-videos-section";
 
 export const LikedView = () => {
   return (

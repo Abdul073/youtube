@@ -1,5 +1,7 @@
 import React from "react";
-import { HistoryVideosSection } from "../../section/history-videos-section";
+import { HistoryVideosSection } from "@/modules/playlists/ui/section/history-videos-section"
+
+
 
 export const HistoryView = () => {
   return (
