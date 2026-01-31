@@ -6,7 +6,7 @@ import { cva, VariantProps } from "class-variance-authority";
 import Link from "next/link";
 import { VideoThumbnail, VideoThumbnailSkeleton } from "./video-thumbnail";
 import { cn } from "@/lib/utils";
-import { UserAvatar } from "@/components/usre-avatar";
+
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useMemo } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UserAvatar } from "@/components/usre-avatar";
 
 const videoRowCardVariants = cva("group flex min-w-0", {
   variants: {
@@ -97,7 +98,7 @@ export const VideoRowCard = ({ data, onRemove, size="default" }: VideoRowCardPro
       <Link href={`/video/${data.id}`} className={thumbnailVariants({ size })}>
         <VideoThumbnail
           imageUrl={data.thumbnailUrl}
-          previewUrl={data.thumbnailUrl}
+          previewUrl={data.previewUrl}
           title={data.title}
           duration={data.duration}
         />

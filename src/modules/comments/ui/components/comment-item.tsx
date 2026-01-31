@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { CommentsGetManyOutput } from "../../types";
-import { UserAvatar } from "@/components/usre-avatar";
+
 import { formatDistanceToNow } from "date-fns";
 import { trpc } from "@/trpc/client";
 import {
@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { CommentForm } from "./comments-form";
 import { CommentReplies } from "./comment-replies";
+import { UserAvatar } from "@/components/usre-avatar";
 
 interface CommentItemProps {
   comment: CommentsGetManyOutput["items"][number];

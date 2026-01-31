@@ -37,7 +37,7 @@ export const ThumbnailGenerateModal = ({
     },
   });
 
-  const generatehumbnail = trpc.videos.generateThumbnail.useMutation({
+  const generateThumbnail = trpc.videos.generateThumbnail.useMutation({
     onSuccess: () => {
       toast.success("Background job started", {
         description: "This may take some time",
@@ -51,7 +51,7 @@ export const ThumbnailGenerateModal = ({
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    generatehumbnail.mutate({ id: videoId, prompt: values.prompt });
+    generateThumbnail.mutate({ id: videoId, prompt: values.prompt });
   };
   return (
     <ResponsiveModal
@@ -84,7 +84,7 @@ export const ThumbnailGenerateModal = ({
             )}
           />
           <div className="flex justify-end">
-            <Button type="submit" disabled={generatehumbnail.isPending}>
+            <Button type="submit" disabled={generateThumbnail.isPending}>
               Generate
             </Button>
           </div>

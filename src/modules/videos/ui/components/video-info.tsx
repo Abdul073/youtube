@@ -2,10 +2,10 @@ import { useMemo } from "react";
 import { VideoGetManyOutput } from "../../types";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
-import { UserAvatar } from "@/components/usre-avatar";
 import { UserInfo } from "@/modules/users/ui/components/user-info";
 import { VideoMenu } from "./video-menu";
 import { Skeleton } from "@/components/ui/skeleton";
+import { UserAvatar } from "@/components/usre-avatar";
 
 interface VideoInfoProps {
   data: VideoGetManyOutput["items"][number];
