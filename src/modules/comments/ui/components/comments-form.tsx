@@ -17,6 +17,9 @@ import {
 } from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 
+const commentFormSchema = commentInsertSchema.omit({ userId: true });
+type CommentFormValues = z.infer<typeof commentFormSchema>;
+
 interface CommentFormProps {
   videoId: string;
   parentId?: string;
@@ -51,8 +54,8 @@ export const CommentForm = ({
     },
   });
 
-  const form = useForm<z.infer<typeof commentInsertSchema>>({
-    resolver: zodResolver(commentInsertSchema.omit({ userId: true })),
+  const form = useForm<CommentFormValues>({
+    resolver: zodResolver(commentFormSchema),
     defaultValues: {
       parentId: parentId,
       videoId: videoId,
@@ -60,7 +63,7 @@ export const CommentForm = ({
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof commentInsertSchema>) => {
+  const handleSubmit = (values: CommentFormValues) => {
     create.mutate(values);
   };
 

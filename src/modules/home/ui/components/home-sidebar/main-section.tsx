@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
   SidebarMenu,

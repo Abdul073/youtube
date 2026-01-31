@@ -519,7 +519,9 @@ const FormSectionSuspence = ({ videoId }: FormSectinProps) => {
 
                     <Select
                       onValueChange={field.onChange}
-                      defaultValue={field.value ?? undefined}
+                      defaultValue={
+                        field.value as string | undefined
+                      }
                     >
                       <FormControl>
                         <SelectTrigger>

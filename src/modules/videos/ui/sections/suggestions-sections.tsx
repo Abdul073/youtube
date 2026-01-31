@@ -1,7 +1,6 @@
 "use client";
 
 import { DEFAULT_LIMIT } from "@/constants";
-import { videos } from "@/db/schema";
 import { trpc } from "@/trpc/client";
 import { VideoRowCard, VideoRowCardSkeleton } from "../components/video-row-card";
 import { VideoGridCard, VideoGridCardSkeleton } from "../components/video-grid-card";
