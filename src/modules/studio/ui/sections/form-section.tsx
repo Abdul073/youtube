@@ -294,10 +294,9 @@ const FormSectionSuspence = ({ videoId }: FormSectinProps) => {
                           type="button"
                           className="rounded-full size-6 [&_svg]:size-3"
                           onClick={() => generateTitle.mutate({ id: videoId })}
-                          // disabled={
-                          //   generateTitle.isPending || !video.muxPlaybackId
-                          // }
-                          disabled
+                          disabled={
+                            generateTitle.isPending || !video.muxPlaybackId
+                          }
                         >
                           {generateTitle.isPending ? (
                             <Loader2Icon className="animate-spin" />
@@ -334,10 +333,9 @@ const FormSectionSuspence = ({ videoId }: FormSectinProps) => {
                           onClick={() =>
                             generateDescription.mutate({ id: videoId })
                           }
-                          // disabled={
-                          //   generateDescription.isPending || !video.muxTrackId
-                          // }
-                          disabled
+                          disabled={
+                            generateDescription.isPending || !video.muxTrackId
+                          }
                         >
                           {generateDescription.isPending ? (
                             <Loader2Icon className="animate-spin" />

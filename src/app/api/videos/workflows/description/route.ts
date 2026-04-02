@@ -32,9 +32,9 @@ export const { POST } = serve(async (context) => {
   });
 
   const transcript = await context.run("get-transcript", async () => {
-    const trackUrl = `https://stream.mux.com/${video.muxPlaybackId}/text${video.muxTrackId}.txt`;
+    const trackUrl = `https://stream.mux.com/${video.muxPlaybackId}/text/${video.muxTrackId}.txt`;
     const response = await fetch(trackUrl);
-    const text = response.text();
+    const text = await response.text();
 
     if (!text) {
       throw new Error("Bad request");
@@ -42,11 +42,13 @@ export const { POST } = serve(async (context) => {
     return text;
   });
 
-  const { body } = await context.api.openai.call("generate-description", {
-    token: process.env.OPENAI_API_KEY!,
-    operation: "chat.completions.create",
+  const { body } = await context.call<{
+    choices: { message: { content: string } }[];
+  }>("generate-description", {
+    url: "https://api.groq.com/openai/v1/chat/completions",
+    method: "POST",
     body: {
-      model: "gpt-4o",
+      model: "llama-3.3-70b-versatile",
       messages: [
         {
           role: "system",
@@ -57,6 +59,10 @@ export const { POST } = serve(async (context) => {
           content: transcript,
         },
       ],
+    },
+    headers: {
+      Authorization: `Bearer ${process.env.GROQ_API_KEY}`,
+      "Content-Type": "application/json",
     },
   });
   const description = body?.choices?.[0]?.message?.content;
