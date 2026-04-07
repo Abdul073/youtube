@@ -33,11 +33,20 @@ export const { POST } = serve(async (context) => {
   });
 
   const transcript = await context.run("get-transcript", async () => {
+    if (!video.muxTrackId) {
+      throw new Error("No transcript track available");
+    }
+
     const trackUrl = `https://stream.mux.com/${video.muxPlaybackId}/text/${video.muxTrackId}.txt`;
     const response = await fetch(trackUrl);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch transcript: ${response.status}`);
+    }
+
     const text = await response.text();
 
-    if (!text) {
+    if (!text?.trim()) {
       throw new Error("Bad request");
     }
     return text;
