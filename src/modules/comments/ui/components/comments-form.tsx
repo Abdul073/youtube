@@ -51,8 +51,10 @@ export const CommentForm = ({
     },
   });
 
-  const form = useForm<z.infer<typeof commentInsertSchema>>({
-    resolver: zodResolver(commentInsertSchema.omit({ userId: true })),
+  const formSchema = commentInsertSchema.omit({ userId: true });
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
     defaultValues: {
       parentId: parentId,
       videoId: videoId,
@@ -60,7 +62,7 @@ export const CommentForm = ({
     },
   });
 
-  const handleSubmit = (values: z.infer<typeof commentInsertSchema>) => {
+  const handleSubmit = (values: z.infer<typeof formSchema>) => {
     create.mutate(values);
   };
 
